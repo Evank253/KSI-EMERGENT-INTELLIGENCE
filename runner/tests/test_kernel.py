@@ -11,6 +11,7 @@ class TestRunnerKernel(unittest.TestCase):
         result = runner.run(Objective("RUNNER-001", "Analyze a deterministic task", "HUMAN_OPERATOR"))
         self.assertEqual(result["objective"].objective_id, "RUNNER-001")
         self.assertEqual(len(result["plan"]), 1)
+        self.assertEqual(result["plan"][0].required_capability, "ANALYZE_OBJECTIVE")
         self.assertEqual(result["qualification"], "NOT_QUALIFIED")
         self.assertFalse(result["authority_granted"])
 
@@ -18,7 +19,13 @@ class TestRunnerKernel(unittest.TestCase):
         runner = KSIRunner(lambda action, target: {"ok": True})
         result = runner.run(
             Objective("RUNNER-006", "Run authorized analysis", "HUMAN_OPERATOR"),
-            Authorization("HUMAN_OPERATOR", "COGNITIVE_OPERATION", True, True),
+            Authorization(
+                "HUMAN_OPERATOR",
+                "COGNITIVE_OPERATION",
+                True,
+                True,
+                frozenset({"ANALYZE_OBJECTIVE"}),
+            ),
         )
         self.assertEqual(result["results"][0].disposition, Disposition.ALLOW)
 
