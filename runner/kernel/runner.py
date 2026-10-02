@@ -1,8 +1,11 @@
 from dataclasses import dataclass
+from typing import Callable
+
 from .objective import Objective
 from .planner import Planner
 from .execution_loop import ExecutionLoop
 from ..capability.awareness import CapabilityAwareness
+from ..governance.execution_boundary import GovernedExecutionBoundary
 
 
 @dataclass
@@ -13,10 +16,17 @@ class RunnerState:
 
 
 class KSIRunner:
-    def __init__(self, tool_executor):
+    """Governed cognitive execution kernel.
+
+    The underlying tool executor is injected only into GovernedExecutionBoundary.
+    ExecutionLoop and KSIRunner do not hold a direct callable reference to it.
+    """
+
+    def __init__(self, tool_executor: Callable[[str, str], object]):
         self.capabilities = CapabilityAwareness()
         self.planner = Planner()
-        self.execution = ExecutionLoop(tool_executor)
+        self.boundary = GovernedExecutionBoundary(tool_executor)
+        self.execution = ExecutionLoop(self.boundary)
 
     def run(self, objective: Objective, authorization=None):
         steps = self.planner.plan(objective)
