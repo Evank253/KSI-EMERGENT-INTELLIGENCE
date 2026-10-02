@@ -1,0 +1,21 @@
+invariants:
+  - id: R-001
+    rule: capability_does_not_imply_authority
+  - id: R-002
+    rule: intelligence_does_not_imply_authority
+  - id: R-003
+    rule: autonomy_does_not_imply_authority
+  - id: R-004
+    rule: emergence_does_not_imply_authority
+  - id: R-005
+    rule: qualification_does_not_imply_authority
+  - id: R-006
+    rule: self_granted_authority_is_forbidden
+  - id: R-007
+    rule: protected_governance_changes_require_external_human_authorization
+  - id: R-008
+    rule: evidence_history_is_append_only
+  - id: R-009
+    rule: material_uncertainty_must_not_be_presented_as_verified_fact
+  - id: R-010
+    rule: unauthorized_consequential_actions_must_stop_or_escalate
