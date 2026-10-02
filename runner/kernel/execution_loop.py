@@ -1,5 +1,7 @@
 from dataclasses import dataclass
-from ..governance.gateway import ActionRequest, Authorization, Disposition, authorize
+
+from ..governance.execution_boundary import GovernedExecutionBoundary
+from ..governance.gateway import Authorization, Disposition
 from ..governance.escalation import Escalation, escalate
 
 
@@ -12,21 +14,25 @@ class ExecutionResult:
 
 
 class ExecutionLoop:
-    def __init__(self, tool_executor):
-        self.tool_executor = tool_executor
+    """Plans and sequences steps; does not own or invoke a tool executor.
+
+    Every consequential execution is delegated to GovernedExecutionBoundary,
+    which is the sole owner of the underlying executor reference.
+    """
+
+    def __init__(self, boundary: GovernedExecutionBoundary):
+        self.boundary = boundary
 
     def execute(self, step, authorization: Authorization | None = None) -> ExecutionResult:
-        request = ActionRequest(
-            action=step.action,
-            target=step.target,
-            consequential=step.consequential,
-            required_scope=step.required_scope,
-            requested_by="KSI_RUNNER",
-        )
-        disposition = authorize(request, authorization)
+        decision, output = self.boundary.execute_step(step, authorization)
+        disposition = decision.disposition
+
         if disposition is Disposition.ALLOW:
-            output = self.tool_executor(step.action, step.target)
-            return ExecutionResult(disposition=disposition, action=step.action, output=output)
+            return ExecutionResult(
+                disposition=disposition,
+                action=step.action,
+                output=output,
+            )
         if disposition is Disposition.ESCALATE:
             return ExecutionResult(
                 disposition=disposition,
