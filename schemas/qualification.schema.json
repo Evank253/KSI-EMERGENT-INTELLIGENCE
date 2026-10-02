@@ -1,0 +1,10 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M02 Qualification",
+  "type": "object",
+  "required": ["state","evidence_refs"],
+  "properties": {
+    "state":{"enum":["OBSERVED","CANDIDATE","CONTROLLED","REPLICATED","REVIEWED","QUALIFIED","REJECTED","EVIDENCE_INSUFFICIENT"]},
+    "evidence_refs":{"type":"array","items":{"type":"string"}}
+  }
+}
