@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "M02 Experiment",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["experiment_id","timestamp","configuration","hypothesis","task_definition","component_versions","model_versions","available_tools","input_information_hash","context_hash","resource_budget","human_intervention","task_decomposition","reproducibility_group"],
+  "properties": {
+    "experiment_id": {"type":"string","minLength":1},
+    "timestamp": {"type":"string"},
+    "configuration": {"enum":["A","B","C","A+B","A+C","B+C","A+B+C"]},
+    "hypothesis": {"type":"string"},
+    "task_definition": {"type":"string"},
+    "component_versions": {"type":"object"},
+    "model_versions": {"type":"object"},
+    "available_tools": {"type":"array","items":{"type":"string"}},
+    "input_information_hash": {"type":"string"},
+    "context_hash": {"type":"string"},
+    "resource_budget": {"type":"object"},
+    "human_intervention": {"type":"object"},
+    "task_decomposition": {"type":"object"},
+    "reproducibility_group": {"type":"string"}
+  }
+}
