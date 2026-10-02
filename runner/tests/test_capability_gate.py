@@ -70,7 +70,7 @@ class TestCapabilityGate(unittest.TestCase):
     def test_distinct_gate_invoked_on_boundary_path(self):
         boundary, executed = self._boundary()
         with patch("runner.governance.execution_boundary.authorize_capability", wraps=authorize_capability) as gate:
-            boundary.execute(self._request(), Authorization("HUMAN_OPERATOR", "COGNITIVE_OPERATION", True, True, frozenset()))
+            boundary.execute(self._request(), Authorization("HUMAN_OPERATOR", "COGNITIVE_OPERATION", True, True))
         gate.assert_called_once()
         self.assertEqual(executed, [])
 
