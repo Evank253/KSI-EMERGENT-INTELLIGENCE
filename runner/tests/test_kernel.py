@@ -25,7 +25,6 @@ class TestRunnerKernel(unittest.TestCase):
                 "COGNITIVE_OPERATION",
                 True,
                 True,
-                frozenset({"ANALYZE_OBJECTIVE"}),
             ),
         )
         self.assertEqual(result["results"][0].disposition, Disposition.ALLOW)
