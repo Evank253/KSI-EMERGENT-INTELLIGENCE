@@ -1,0 +1,95 @@
+schema_id: KSI-CYCLE3-EVIDENCE-001
+version: "1.0.0"
+status: FROZEN_FOR_EXPERIMENT
+purpose: "Canonical evidence contract for the controlled repair-effect experiment"
+
+claim_scope:
+  claim_id: KRONOS-CYCLE3-REPAIR-EFFECT-001
+  statement: "Under a defined controlled fixture, an authorized state transition can change the outcome of the same test identity/version from FAIL to PASS."
+  scope: CONTROLLED_FIXTURE_ONLY
+  excludes: [GENERAL_REPOSITORY_DEFECT_REPAIR, ARBITRARY_CODE_EXECUTION, M02_QUALIFICATION, EMERGENCE, AUTHORITY]
+
+test:
+  test_id: KRONOS-REPAIR-EFFECT-001
+  test_version: "1.0"
+  assertion_contract:
+    identity: REQUIRED
+    expected_before: FAIL
+    expected_after: PASS
+    evaluation_contract: "Same test identity, version, assertion, and evaluation conditions before and after repair"
+  identity_must_match: true
+
+package_a:
+  role: BASELINE
+  required: true
+  status: SEALED_REPAIR_EFFECT_BASELINE
+  required_fields: [id, root_hash, source_sha, snapshot_id, execution_id, observation_id, test_id, test_version, state_id, state_sequence, result]
+  result: FAIL
+
+repair:
+  required: true
+  required_fields: [repair_id, authorized_by, authorization_scope, change_reason, parent_package_id, parent_state_id, new_state_id, new_source_or_state_sha]
+  invariants:
+    authorization_required: true
+    new_state_must_differ: true
+    historical_package_a_immutable: true
+
+package_b:
+  role: RETEST
+  required: true
+  status: SEALED_REPAIR_EFFECT_RETEST
+  required_fields: [id, root_hash, source_sha, snapshot_id, execution_id, observation_id, test_id, test_version, state_id, state_sequence, predecessor_package_id, repair_id, result]
+  result: PASS
+  invariants:
+    id_differs_from_package_a: true
+    root_hash_differs_from_package_a: true
+    state_id_differs_from_package_a: true
+    state_sequence_greater_than_package_a: true
+    predecessor_must_be_explicit: true
+    test_identity_must_match_package_a: true
+
+runtime:
+  required: true
+  before: {observation_id: REQUIRED, captured_at: REQUIRED}
+  after: {observation_id: REQUIRED, captured_at: REQUIRED}
+  causal_interpretation: DESCRIPTIVE_ONLY
+  latency_difference_is_not_automatically_causal: true
+
+comparison:
+  required: true
+  required_fields: [predecessor_package_id, new_package_id, predecessor_root_hash, new_root_hash, predecessor_source_sha, new_source_sha, source_changed, package_changed, root_changed, same_test_identity, before_result, after_result, defect_resolution_observed, qualification, authority_granted]
+  same_test_identity: true
+  before_result: FAIL
+  after_result: PASS
+  defect_resolution_observed: true
+  qualification: NOT_QUALIFIED
+  authority_granted: false
+
+lineage:
+  required: [PACKAGE_A, REPAIR, STATE_B, PACKAGE_B, COMPARISON]
+  invariant: "Package B must explicitly reference Package A and the authorized repair."
+
+integrity:
+  evidence_immutable_after_seal: true
+  root_hash_required: true
+  artifact_hashes_required: true
+  invalid_execution_cannot_be_accepted: true
+  mutation_requires_new_snapshot: true
+
+dispositions:
+  observed: OBSERVED
+  evidence_incomplete: EVIDENCE_INSUFFICIENT
+  identity_mismatch: TEST_IDENTITY_MISMATCH
+  lineage_missing: LINEAGE_INCOMPLETE
+  unauthorized_repair: AUTHORIZATION_FAILURE
+
+qualification:
+  cycle3_can_qualify: false
+  m02_required: true
+  status: NOT_QUALIFIED
+
+authority:
+  capability_implies_authority: false
+  evidence_implies_authority: false
+  qualification_implies_authority: false
+  authority_granted: false
