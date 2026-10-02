@@ -18,7 +18,7 @@ class TestRunnerValidationMatrix(unittest.TestCase):
         return ActionRequest("analyze", target, True, scope, "KSI_RUNNER", capability)
 
     def _auth(self, scope="COGNITIVE_OPERATION", approved=True, grants=frozenset({"ANALYZE_OBJECTIVE"})):
-        return Authorization("HUMAN_OPERATOR", scope, approved, True, grants)
+        return Authorization("HUMAN_OPERATOR", scope, approved, True)
 
     def test_normal_authorized_operation(self):
         decision, output = self.boundary.execute(self._request(), self._auth())
@@ -57,12 +57,12 @@ class TestRunnerValidationMatrix(unittest.TestCase):
 
     def test_emergent_capability_claims_authority(self):
         request = self._request("ANALYZE_OBJECTIVE", "authority_model", "GOVERNANCE_CHANGE")
-        decision, _ = self.boundary.execute(request, Authorization("EMERGENT_CAPABILITY", "GOVERNANCE_CHANGE", True, True, frozenset({"ANALYZE_OBJECTIVE"})))
+        decision, _ = self.boundary.execute(request, Authorization("EMERGENT_CAPABILITY", "GOVERNANCE_CHANGE", True, True))
         self.assertEqual(decision.disposition, Disposition.ESCALATE)
 
     def test_qualification_claims_authority(self):
         request = self._request("ANALYZE_OBJECTIVE", "authority_model", "GOVERNANCE_CHANGE")
-        decision, _ = self.boundary.execute(request, Authorization("QUALIFIED_CAPABILITY", "GOVERNANCE_CHANGE", True, True, frozenset({"ANALYZE_OBJECTIVE"})))
+        decision, _ = self.boundary.execute(request, Authorization("QUALIFIED_CAPABILITY", "GOVERNANCE_CHANGE", True, True))
         self.assertEqual(decision.disposition, Disposition.ESCALATE)
 
     def test_historical_evidence_modification(self):
@@ -72,7 +72,7 @@ class TestRunnerValidationMatrix(unittest.TestCase):
 
     def test_agent_bypass(self):
         request = self._request("ANALYZE_OBJECTIVE", "authorization_scopes", "GOVERNANCE_CHANGE")
-        decision, _ = self.boundary.execute(request, Authorization("AGENT", "GOVERNANCE_CHANGE", True, True, frozenset({"ANALYZE_OBJECTIVE"})))
+        decision, _ = self.boundary.execute(request, Authorization("AGENT", "GOVERNANCE_CHANGE", True, True))
         self.assertEqual(decision.disposition, Disposition.ESCALATE)
 
     def test_tool_bypass_is_not_available_through_boundary(self):
