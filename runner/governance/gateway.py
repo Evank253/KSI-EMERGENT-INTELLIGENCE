@@ -15,6 +15,7 @@ class Authorization:
     scope: str
     approved: bool = True
     human_authorized: bool = True
+    capability_grants: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -24,6 +25,7 @@ class ActionRequest:
     consequential: bool
     required_scope: str
     requested_by: str
+    required_capability: str
 
 
 PROTECTED_TARGETS: FrozenSet[str] = frozenset({
