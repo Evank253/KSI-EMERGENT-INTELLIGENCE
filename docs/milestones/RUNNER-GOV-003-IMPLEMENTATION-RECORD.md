@@ -7,9 +7,10 @@
 This record documents the implementation performed after human authorization commit:
 
 - Authorization: `1d59b0d3103ddf13fdbbbdcf73b083204f0400e3`
-- Implementation head: `d59a9ca1415b786dc9639037f227b773e71f4340`
+- Prior implementation baseline: `d59a9ca1415b786dc9639037f227b773e71f4340`
+- Current implementation head: `87e9a445f5dc19ef8107b8276735ca5ba70c6195`
 
-The implementation is scoped to the ratified GOV-003 specification. No bridge deployment or B-001 integration is authorized by this record.
+The implementation remains scoped to the ratified GOV-003 specification. No bridge deployment or B-001 integration is authorized by this record.
 
 ## Implemented control
 
@@ -18,7 +19,7 @@ Execution now follows:
 ```
 ActionRequest
     ↓
-Capability Gate
+Distinct Capability Gate
     ↓
 Governance Authorization
     ↓
@@ -27,77 +28,95 @@ Executor
 
 The capability gate is a dedicated enforcement component and does not consult CapabilityAwareness status, evidence, confidence, or governance scope.
 
-Missing, empty, or whitespace-only capability identity fails closed.
+Missing, empty, whitespace-only, or invalid capability identity fails closed.
 
-Explicit capability grants are supplied through the execution authorization context and are evaluated independently from governance authorization.
+Explicit capability grants live only in the injected `CapabilityContext`. They are evaluated independently from governance authorization.
 
 ## Files changed
 
-1. `runner/capability/gate.py`
-   - Added independent capability gate.
-2. `runner/governance/gateway.py`
-   - Added explicit capability grants to execution authorization context.
-   - Added required capability identity to ActionRequest, with an empty default that the capability gate rejects.
-3. `runner/governance/execution_boundary.py`
-   - Enforced capability gate before governance authorization.
-   - Executor invocation remains behind both gates.
+1. `runner/governance/capability_gate.py`
+   - Added the named distinct `authorize_capability(required_capability, context)` decision point.
+2. `runner/governance/capability_context.py`
+   - Added explicit execution context with actor, capability grants, and optional run ID.
+3. `runner/governance/gateway.py`
+   - Added `required_capability` to `ActionRequest`.
+   - Capability grants are not stored in `Authorization`; they remain in the separate capability context.
+4. `runner/governance/execution_boundary.py`
+   - Invokes the distinct capability gate before governance authorization.
+   - Executor invocation requires both gates to ALLOW.
    - ExecutionDecision records capability disposition separately.
-4. `runner/kernel/planner.py`
-   - Added required capability to PlanStep.
-   - Planner assigns `ANALYZE_OBJECTIVE` to the existing analysis step.
-5. `runner/tests/test_capability_gate.py`
-   - Added capability gate, fail-closed, non-authority, ordering, and executor-blocking tests.
-6. `runner/tests/test_execution_matrix.py`
-   - Updated matrix for capability enforcement and added substitution/missing-capability cases.
-7. `runner/tests/test_kernel.py`
-   - Updated kernel regression for explicit capability grant.
+5. `runner/kernel/planner.py`
+   - Carries the required capability on the existing plan step.
+6. `runner/kernel/runner.py`
+   - Injects the explicit capability context alongside the executor.
+7. `runner/tests/test_capability_gate.py`
+   - Covers fail-closed inputs, explicit grants, awareness non-authority, executor blocking, and distinct gate invocation.
+8. `runner/tests/test_execution_matrix.py`
+   - Covers the GOV-003 matrix, including the AC-09 discriminating pairs.
+9. `runner/tests/test_kernel.py`
+   - Supplies an explicit capability context for the authorized kernel path.
+10. `runner/capability/gate.py`
+   - Removed as the superseded combined gate/context implementation.
 
 ## Implementation commits
 
-The GitHub Contents API produced sequential commits:
+Sequential commits after the earlier GOV-003 implementation record:
 
-- `088f412ead0d597bb865d733b260f4730e26c195` — add capability gate
-- `ff59bcc51b73c4fa80fc82662e156b8f7ce86731` — add capability grants to Authorization/ActionRequest
-- `fcc8b5e519fd80634c39d3040d7bee9ba29c61b7` — enforce capability gate at execution boundary
-- `92c8b05ce8599ad2270c4bade822f43a69f94bed` — require capability on planned steps
-- `f84ee49123670f44f66c2b076375ee950ee77502` — preserve fail-closed legacy request behavior
-- `f35bfb1ad27fc561e723403f7ef03794afed0306` — preserve fail-closed plan-step behavior
-- `5a7ee89a5ed93a267f10e09ed10f6885aff4210f` — add GOV-003 capability tests
-- `320497342fe60932f73d0788c9890ca8773df9d6` — update execution matrix
-- `d59a9ca1415b786dc9639037f227b773e71f4340` — update kernel regression
+- `b5e5a3f63b7dff1936873177ac446b9948c7053e` — add explicit capability execution context
+- `c8dd81ab891829dc3f6e16780af64f67b7f4a99c` — add distinct capability authorization gate
+- `6bc3346b20a99c8152c97eb3aea804e64e1d8a04` — use distinct capability context and gate
+- `fa8897c18b3770106405caff22225213d1bb98bd` — inject explicit capability context
+- `45701bdcd28196923b7e539458e9930bfd3029e3` — align capability gate tests with split governance modules
+- `5ab63dc328f13717a63020e458b7f6f852995fe6` — add AC-09 discriminating execution matrix
+- `74c47269015b43ab4ac4b5731c8ab6a2585b2131` — provide explicit capability context in kernel tests
+- `dd40a4da09cca25839f6ae3894a784091f025f2f` — remove superseded capability gate module
+- `d35297b3891f1234f0996ec83c7a1518441d90d7` — cover execute_step capability-gate path
+- `c56c21ca7ef95dfb9d3915e3ac6150182d8a5631` — use separate capability context in gate tests
+- `995e12f8652f2e5fe8fe31a9cfed0127fa00aa1f` — keep matrix capability grants in context
+- `87e9a445f5dc19ef8107b8276735ca5ba70c6195` — keep kernel governance authorization separate from capability context
 
 ## Evidence status
 
 ### Static implementation evidence
 
-The post-authorization comparison is ahead by 9 commits and reports the expected GOV-003 file changes. The sole underlying executor invocation remains in `GovernedExecutionBoundary.execute`, after both enforcement stages.
+The requested distinct gate/context separation is present in the live branch. The existing `runner/governance/execution_boundary.py` remains the single designed executor boundary; no duplicate `runner/kernel/execution_boundary.py` was created.
 
 ### Runtime evidence
 
 **NOT YET ESTABLISHED BY AN INDEPENDENT EVALUATOR.**
 
-No test pass count, instrumented executor count, or adversarial pass/fail disposition is asserted here.
+No 33/33 regression result, executor call count, or adversarial disposition is asserted here.
 
 ### Local test execution
 
-A local attempt to reconstruct and execute the suite was blocked because this environment cannot resolve `raw.githubusercontent.com`. Therefore this record does not claim local test execution.
+A local attempt to reconstruct and execute the suite remains blocked because this environment cannot resolve `raw.githubusercontent.com`. Therefore this record does not claim local test execution.
 
 ## Required next evidence
 
 Independent evaluation should specifically inspect:
 
-- direct boundary invocation
-- Runner/kernel path
-- ExecutionLoop path
-- alternate executor references
-- missing/invalid capability
-- capability substitution
+- distinct gate invocation on every designed execution path
+- missing/empty/invalid capability
+- missing/unauthorized capability
 - governance ALLOW + capability DENY
-- capability ALLOW + governance REJECT
-- existing GOV-002 regression behavior
+- capability ALLOW + governance REJECT/ESCALATE
+- CLAIMED/MEASURED/VERIFIED without explicit grant
+- AC-09 full matrix
+- AC-10 regression suite and exact pass/fail count
 - instrumented executor invocation counts
 - static call graph
 - residual/private-reference limitations
+
+## Explicit non-claims
+
+This implementation does not claim:
+
+- hardening of the `_tool_executor` private residual identified by Eval 003
+- capability gating on planner-only paths beyond the execution boundary
+- Kronos/M02 integration
+- Observe→Verify→Evidence runtime loop
+- qualification or production security
+- bridge deployment or B-001 authorization
 
 ## Disposition boundary
 
