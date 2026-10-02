@@ -1,0 +1,28 @@
+schema_version: "0.1"
+
+experiment:
+  experiment_id: ""
+  date: ""
+  hypothesis: ""
+  task_definition: ""
+
+participants: []
+
+capabilities: []
+
+mechanisms: []
+
+baselines: []
+
+observations: []
+
+results:
+  outcome: ""
+  evidence_refs: []
+  reproduction_state: ""
+  qualification_state: ""
+
+provenance:
+  repositories: []
+  commits: []
+  artifacts: []
