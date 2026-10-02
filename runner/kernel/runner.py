@@ -5,6 +5,7 @@ from .objective import Objective
 from .planner import Planner
 from .execution_loop import ExecutionLoop
 from ..capability.awareness import CapabilityAwareness
+from ..governance.capability_context import CapabilityContext
 from ..governance.execution_boundary import GovernedExecutionBoundary
 
 
@@ -18,14 +19,19 @@ class RunnerState:
 class KSIRunner:
     """Governed cognitive execution kernel.
 
-    The underlying tool executor is injected only into GovernedExecutionBoundary.
-    ExecutionLoop and KSIRunner do not hold a direct callable reference to it.
+    The underlying tool executor and explicit capability context are injected
+    into GovernedExecutionBoundary. ExecutionLoop owns neither.
     """
 
-    def __init__(self, tool_executor: Callable[[str, str], object]):
+    def __init__(
+        self,
+        tool_executor: Callable[[str, str], object],
+        capability_context: CapabilityContext | None = None,
+    ):
         self.capabilities = CapabilityAwareness()
         self.planner = Planner()
-        self.boundary = GovernedExecutionBoundary(tool_executor)
+        self.capability_context = capability_context or CapabilityContext("KSI_RUNNER")
+        self.boundary = GovernedExecutionBoundary(tool_executor, self.capability_context)
         self.execution = ExecutionLoop(self.boundary)
 
     def run(self, objective: Objective, authorization=None):
