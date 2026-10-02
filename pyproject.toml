@@ -1,0 +1,9 @@
+[build-system]
+requires = []
+build-backend = "backend"
+
+[project]
+name = "ksi-m02-instrumentation"
+version = "0.1.0"
+description = "Independent measurement and evaluation infrastructure for KSI Emergent Intelligence"
+requires-python = ">=3.10"
