@@ -1,0 +1,9 @@
+constitution_id: KSH-CONSTITUTION-001
+constitution_version: "1.0.0"
+constitution_status: FROZEN
+source_repository: Evank253/Super-intelligence-under-human-authority-
+source_ref: Python-3
+invariants: C-001..C-011
+emergence_rule: "Emergent capability is subject to the constitutional authority boundary; emergence never implies authority."
+qualification_rule: "Qualification is an evidence disposition and does not grant authority."
+governance_escalation: "Any proposed authority or constitutional boundary change is a governance event requiring human authority."
