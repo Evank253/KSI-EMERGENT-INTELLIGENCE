@@ -8,6 +8,7 @@ class PlanStep:
     target: str
     consequential: bool
     required_scope: str
+    required_capability: str
 
 
 class Planner:
@@ -19,5 +20,6 @@ class Planner:
                 target="cognition",
                 consequential=False,
                 required_scope="COGNITIVE_OPERATION",
+                required_capability="ANALYZE_OBJECTIVE",
             )
         ]
