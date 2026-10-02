@@ -1,6 +1,11 @@
 from dataclasses import dataclass
 from typing import Callable
 
+from ..capability.gate import (
+    CapabilityContext,
+    CapabilityDisposition,
+    authorize_capability,
+)
 from .gateway import ActionRequest, Authorization, Disposition, authorize
 
 
@@ -12,14 +17,15 @@ class GovernanceBoundaryError(RuntimeError):
 class ExecutionDecision:
     disposition: Disposition
     request: ActionRequest
+    capability_disposition: CapabilityDisposition
 
 
 class GovernedExecutionBoundary:
-    """Mandatory execution boundary for runner tools.
+    """Mandatory capability and governance boundary for runner tools.
 
-    Tools receive execution only after the governance gateway authorizes the
-    exact ActionRequest. Callers cannot supply a pre-approved boolean or bypass
-    the gateway through this interface.
+    Execution ordering is fixed:
+    ActionRequest -> Capability Gate -> Governance Authorization -> Executor.
+    Capability authorization and governance authorization are independent.
     """
 
     def __init__(self, tool_executor: Callable[[str, str], object]):
@@ -30,8 +36,33 @@ class GovernedExecutionBoundary:
         request: ActionRequest,
         authorization: Authorization | None = None,
     ) -> tuple[ExecutionDecision, object | None]:
+        capability_context = (
+            CapabilityContext(
+                actor=authorization.actor,
+                capability_grants=authorization.capability_grants,
+            )
+            if authorization is not None
+            else None
+        )
+        capability_disposition = authorize_capability(
+            request.required_capability,
+            capability_context,
+        )
+
+        if capability_disposition is not CapabilityDisposition.ALLOW:
+            decision = ExecutionDecision(
+                disposition=Disposition.REJECT,
+                request=request,
+                capability_disposition=capability_disposition,
+            )
+            return decision, None
+
         disposition = authorize(request, authorization)
-        decision = ExecutionDecision(disposition=disposition, request=request)
+        decision = ExecutionDecision(
+            disposition=disposition,
+            request=request,
+            capability_disposition=capability_disposition,
+        )
 
         if disposition is not Disposition.ALLOW:
             return decision, None
@@ -45,6 +76,7 @@ class GovernedExecutionBoundary:
             consequential=step.consequential,
             required_scope=step.required_scope,
             requested_by="KSI_RUNNER",
+            required_capability=step.required_capability,
         )
         return self.execute(request, authorization)
 
