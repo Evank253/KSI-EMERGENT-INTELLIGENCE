@@ -1,11 +1,8 @@
 from dataclasses import dataclass
 from typing import Callable
 
-from ..capability.gate import (
-    CapabilityContext,
-    CapabilityDisposition,
-    authorize_capability,
-)
+from .capability_context import CapabilityContext
+from .capability_gate import CapabilityDisposition, authorize_capability
 from .gateway import ActionRequest, Authorization, Disposition, authorize
 
 
@@ -25,28 +22,25 @@ class GovernedExecutionBoundary:
 
     Execution ordering is fixed:
     ActionRequest -> Capability Gate -> Governance Authorization -> Executor.
-    Capability authorization and governance authorization are independent.
+    The capability gate and governance gateway remain distinct decisions.
     """
 
-    def __init__(self, tool_executor: Callable[[str, str], object]):
+    def __init__(
+        self,
+        tool_executor: Callable[[str, str], object],
+        capability_context: CapabilityContext,
+    ):
         self._tool_executor = tool_executor
+        self.capability_context = capability_context
 
     def execute(
         self,
         request: ActionRequest,
         authorization: Authorization | None = None,
     ) -> tuple[ExecutionDecision, object | None]:
-        capability_context = (
-            CapabilityContext(
-                actor=authorization.actor,
-                capability_grants=authorization.capability_grants,
-            )
-            if authorization is not None
-            else None
-        )
         capability_disposition = authorize_capability(
             request.required_capability,
-            capability_context,
+            self.capability_context,
         )
 
         if capability_disposition is not CapabilityDisposition.ALLOW:
