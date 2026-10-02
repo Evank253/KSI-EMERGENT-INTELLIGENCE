@@ -1,0 +1,47 @@
+schema_id: KSI-CYCLE4-EXECUTION-001
+version: "1.0.0"
+status: FROZEN_FOR_EXPERIMENT
+purpose: "Executable contract for reproducible repair evaluation"
+
+preconditions:
+  cycle3_contract: KSI-CYCLE3-EVIDENCE-001
+  cycle3_status: OBSERVED
+  package_a: required
+  repair: required
+  package_b: required
+  package_b_lineage_complete: true
+
+experiment:
+  experiment_id: required
+  test_id: KRONOS-REPAIR-EFFECT-001
+  test_version: "1.0"
+  assertion_contract_identity: required
+  replication_threshold: 3
+  state_b_identity: required
+  state_must_remain_constant: true
+
+replication:
+  accepted_result: PASS
+  required_pass_count: 3
+  same_test_identity_required: true
+  same_state_identity_required: true
+  same_assertion_required: true
+  valid_evidence_required: true
+
+disposition:
+  reproduced: REPRODUCED
+  not_established: REPRODUCIBILITY_NOT_ESTABLISHED
+  invalid: INVALID_EXPERIMENT
+  not_ready: NOT_READY
+
+anti_cherry_picking:
+  failed_runs_must_be_preserved: true
+  invalid_runs_must_be_recorded: true
+  retry_until_pass_for_disposition: false
+  test_definition_may_not_change_after_observation: false
+  state_may_not_change_between_required_repetitions: false
+
+authority:
+  qualification_implies_authority: false
+  reproducibility_implies_authority: false
+  authority_granted: false
