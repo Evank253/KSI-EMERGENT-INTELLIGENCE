@@ -25,7 +25,7 @@ class ActionRequest:
     consequential: bool
     required_scope: str
     requested_by: str
-    required_capability: str
+    required_capability: str = ""
 
 
 PROTECTED_TARGETS: FrozenSet[str] = frozenset({
