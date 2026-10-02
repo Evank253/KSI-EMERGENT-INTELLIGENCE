@@ -8,7 +8,7 @@ class PlanStep:
     target: str
     consequential: bool
     required_scope: str
-    required_capability: str
+    required_capability: str = ""
 
 
 class Planner:
