@@ -34,6 +34,17 @@ See:
 - OBSERVATION_SCHEMA.yaml
 
 
+## Certificates and preparation record
+
+The repository includes a provenance record for supplied educational certificates relevant to the engineering and intellectual-property preparation history of the repository owner:
+
+- **CodePath Foundations of AI Engineering** — Certificate of Achievement, Honors, Summer 2026, Certificate ID 418108.
+- **The USPTO Basic Patent Training** — Certificate of Completion dated May 27, 2026, issued by the United States Patent and Trademark Office as shown on the supplied certificate.
+
+See [docs/certificates/CERTIFICATE-RECORD.md](docs/certificates/CERTIFICATE-RECORD.md) for the evidence-bounded record and artifact hashes.
+
+These certificates document course completion/training only. They do not establish patent filing, patent-pending status, patent grant, legal patentability, or independent verification of the technical work in this repository.
+
 ## Intellectual Property
 
 **Copyright © 2026 Evan Ketchum. All rights reserved except as expressly licensed.**
