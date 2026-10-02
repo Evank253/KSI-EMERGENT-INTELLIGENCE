@@ -15,7 +15,6 @@ class Authorization:
     scope: str
     approved: bool = True
     human_authorized: bool = True
-    capability_grants: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
